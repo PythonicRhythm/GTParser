@@ -1,0 +1,1 @@
+## Installation```stMetacello new	repository: 'github://PythonicRhythm/GTParser:master/src';	baseline: 'GTParser';	load```## Load Lepiter				After installing with Metacello, you will be able to execute```#BaselineOfGTParser asClass loadLepiter```
