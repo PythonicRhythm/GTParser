@@ -7,7 +7,11 @@ Class {
 		'letAndNum',
 		'symbols',
 		'operator',
-		'whitespace'
+		'whitespace',
+		'assignment',
+		'expressions',
+		'string',
+		'variable'
 	],
 	#category : #MyParser
 }
@@ -23,13 +27,23 @@ MyParser class >> trimParse: aString [
 ]
 
 { #category : #accessing }
+MyParser >> assignment [
+	^ (variable, ':' asPParser,  whitespace, (numbers / string), ';' asPParser) ==> [:n | Assignment from: n]
+]
+
+{ #category : #accessing }
+MyParser >> expressions [
+	^ ( assignment/ letAndNum) plus
+]
+
+{ #category : #accessing }
 MyParser >> letAndNum [
 	^ (letters / numbers / operator/ whitespace) plus
 ]
 
 { #category : #accessing }
 MyParser >> letters [
-	^ (#letter asPParser plus) ==> [:n | Letters from:n]
+	^ (#letter asPParser plus) ==> [:n | Letters from: n]
 ]
 
 { #category : #accessing }
@@ -47,12 +61,26 @@ MyParser >> operator [
 
 { #category : #accessing }
 MyParser >> start [
-	^ letAndNum
+	^ expressions
+]
+
+{ #category : #accessing }
+MyParser >> string [
+	^ ('"' asPParser, letters, #any asPParser starLazy, '"' asPParser) ==> [:n | StringType from: n]
 ]
 
 { #category : #accessing }
 MyParser >> symbols [
 	^ ('+' asPParser ) "/ ==> [:n | Symbols from: n]"
+]
+
+{ #category : #accessing }
+MyParser >> variable [
+	^ (
+		((#letter asPParser, (letters / numbers / '_' asPParser) plus))
+		/ (#letter asPParser)
+	)
+	==> [:n | VariableType from: n]
 ]
 
 { #category : #accessing }

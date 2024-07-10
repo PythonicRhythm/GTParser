@@ -11,7 +11,7 @@ Class {
 ParseNode class >> from: anOrderedCollection [
 	| temp |
 	temp:= self new.
-	temp data: ('' join: anOrderedCollection).
+	temp data: anOrderedCollection.
 	^temp
 ]
 
