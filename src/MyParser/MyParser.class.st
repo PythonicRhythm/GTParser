@@ -11,7 +11,10 @@ Class {
 		'assignment',
 		'expressions',
 		'string',
-		'variable'
+		'variable',
+		'expression',
+		'term',
+		'factor'
 	],
 	#category : #MyParser
 }
@@ -32,8 +35,25 @@ MyParser >> assignment [
 ]
 
 { #category : #accessing }
+MyParser >> expression [
+	^ whitespace optional,
+	(
+		(term, whitespace optional, '+' asPParser, whitespace optional, term) /
+		(term, whitespace optional, '-' asPParser, whitespace optional, term) /		 
+		term
+	 )
+ ==> [:n | Expression from: n]
+]
+
+{ #category : #accessing }
 MyParser >> expressions [
-	^ ( assignment/ letAndNum) plus
+	"Expressions resembles assignment, mathematical, and functional expressions "
+	^ ( assignment/ expression/ letAndNum) plus
+]
+
+{ #category : #accessing }
+MyParser >> factor [
+	^ (variable/numbers)
 ]
 
 { #category : #accessing }
@@ -72,6 +92,11 @@ MyParser >> string [
 { #category : #accessing }
 MyParser >> symbols [
 	^ ('+' asPParser ) "/ ==> [:n | Symbols from: n]"
+]
+
+{ #category : #accessing }
+MyParser >> term [
+	^ ((factor, '*' asPParser, term) / factor)
 ]
 
 { #category : #accessing }
