@@ -31,7 +31,8 @@ MyParser class >> trimParse: aString [
 
 { #category : #accessing }
 MyParser >> assignment [
-	^ (variable, ':' asPParser,  whitespace, (numbers / string), ';' asPParser) ==> [:n | Assignment from: n]
+	^ whitespace optional,
+	(variable, ':' asPParser,  whitespace, (numbers / string)) ==> [:n | Assignment from: n]
 ]
 
 { #category : #accessing }
@@ -40,20 +41,39 @@ MyParser >> expression [
 	(
 		(term, whitespace optional, '+' asPParser, whitespace optional, term) /
 		(term, whitespace optional, '-' asPParser, whitespace optional, term) /		 
-		term
-	 )
+		(term)
+	 ),
+	 whitespace optional
  ==> [:n | Expression from: n]
+]
+
+{ #category : #accessing }
+MyParser >> expressionTest [
+	<gtExample>
+	^
+	MyParser parse: '-4 * (   5 +  (  5  /  (  25  *  5  ))  )' startingAt: #expression
 ]
 
 { #category : #accessing }
 MyParser >> expressions [
 	"Expressions resembles assignment, mathematical, and functional expressions "
-	^ ( assignment/ expression/ letAndNum) plus
+	^ (
+		(assignment, whitespace optional, ';' asPParser) /
+		(expression, whitespace optional, ';' asPParser) /
+		(letAndNum, whitespace optional, ';' asPParser) /
+		whitespace
+	) plus
 ]
 
 { #category : #accessing }
 MyParser >> factor [
-	^ (variable/numbers)
+	^
+	(
+		variable/
+		numbers /
+		('(' asPParser, expression, ')' asPParser) /
+		('-' asPParser, whitespace optional, factor)
+	)
 ]
 
 { #category : #accessing }
@@ -81,7 +101,7 @@ MyParser >> operator [
 
 { #category : #accessing }
 MyParser >> start [
-	^ expressions
+	^ expressions ==> [:n | n collect: [:e | e at: 1]]
 ]
 
 { #category : #accessing }
@@ -96,7 +116,14 @@ MyParser >> symbols [
 
 { #category : #accessing }
 MyParser >> term [
-	^ ((factor, '*' asPParser, term) / factor)
+	| temp |
+	temp:= [:s | (factor, whitespace optional, s asPParser, whitespace optional, term)].
+	^(
+		(temp value: '*') /
+		(temp value: '/') /
+		(temp value: '%') /
+		factor
+	)
 ]
 
 { #category : #accessing }
